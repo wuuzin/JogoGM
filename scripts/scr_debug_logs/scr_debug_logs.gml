@@ -109,6 +109,11 @@ function scr_batalha_dialogo_enfileirar_item(
 {
     if (texto == "") return;
 
+    var _eh_troca_jogador = is_struct(acao)
+        && variable_struct_exists(acao, "tipo_acao")
+        && acao.tipo_acao == "trocar"
+        && !is_enemy;
+
     array_push(global.hud_batalha_dialogo_fila, {
         texto: texto,
         hp_jogador: variable_struct_exists(acao, "hp_jogador") ? acao.hp_jogador : 0,
@@ -120,7 +125,8 @@ function scr_batalha_dialogo_enfileirar_item(
         xp_alvo: xp_alvo,
         xp_final: xp_final,
         xp_reiniciar: xp_reiniciar,
-        trocar_inimigo_indice: trocar_inimigo_indice
+        trocar_inimigo_indice: trocar_inimigo_indice,
+        eh_troca_jogador: _eh_troca_jogador
     });
 }
 
@@ -133,7 +139,19 @@ function scr_batalha_dialogo_ativar_item(item)
     global.hud_batalha_dialogo_xp_final = item.xp_final;
     global.hud_batalha_dialogo_xp_reiniciar = item.xp_reiniciar;
 
-    if (item.atualizar_hp)
+    if (variable_struct_exists(item, "eh_troca_jogador") && item.eh_troca_jogador)
+    {
+        global.hud_batalha_hp_anim.jogador.atual = item.hp_jogador;
+        global.hud_batalha_hp_anim.jogador.alvo = item.hp_jogador;
+        if (variable_instance_exists(id, "treinador_jogador"))
+        {
+            var _p_troca = scr_get_monstro_ativo(treinador_jogador);
+            var _xp_troca = scr_progresso_xp_nivel(_p_troca);
+            global.hud_batalha_xp_anim.jogador.atual = _xp_troca;
+            global.hud_batalha_xp_anim.jogador.alvo = _xp_troca;
+        }
+    }
+    else if (item.atualizar_hp)
     {
         global.hud_batalha_hp_anim.jogador.alvo = item.hp_jogador;
         global.hud_batalha_hp_anim.inimigo.alvo = item.hp_inimigo;
