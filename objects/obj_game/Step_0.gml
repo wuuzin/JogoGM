@@ -220,21 +220,24 @@ if (global.hud_batalha_menu_estado == "derrota")
     exit;
 }
 
+var _mouse_movido = false;
+if (!variable_instance_exists(id, "hud_menu_mouse_x"))
+{
+    hud_menu_mouse_x = mouse_x;
+    hud_menu_mouse_y = mouse_y;
+}
+else
+{
+    _mouse_movido = (mouse_x != hud_menu_mouse_x) || (mouse_y != hud_menu_mouse_y);
+    hud_menu_mouse_x = mouse_x;
+    hud_menu_mouse_y = mouse_y;
+}
+
+var _acao_hud = { tipo: "nenhum" };
+
 if (global.hud_batalha_menu_estado == "menu")
 {
     var _indice_mouse = -1;
-    var _mouse_movido = false;
-    if (!variable_instance_exists(id, "hud_menu_mouse_x"))
-    {
-        hud_menu_mouse_x = mouse_x;
-        hud_menu_mouse_y = mouse_y;
-    }
-    else
-    {
-        _mouse_movido = mouse_x != hud_menu_mouse_x || mouse_y != hud_menu_mouse_y;
-        hud_menu_mouse_x = mouse_x;
-        hud_menu_mouse_y = mouse_y;
-    }
     if (room == cena_batalha)
     {
         var _opcoes_x = [66, 66, 66, 66];
@@ -255,9 +258,9 @@ if (global.hud_batalha_menu_estado == "menu")
             }
         }
 
-        if (keyboard_check_pressed(ord("W")))
+        if (keyboard_check_pressed(ord("W")) || keyboard_check_pressed(vk_up))
             global.hud_batalha_menu_index = max(0, global.hud_batalha_menu_index - 1);
-        else if (keyboard_check_pressed(ord("S")))
+        else if (keyboard_check_pressed(ord("S")) || keyboard_check_pressed(vk_down))
             global.hud_batalha_menu_index = min(3, global.hud_batalha_menu_index + 1);
     }
     else
@@ -275,7 +278,7 @@ if (global.hud_batalha_menu_estado == "menu")
         {
             _indice_mouse = floor((mouse_x - _start_x) / (_option_w + _gap));
             _indice_mouse = clamp(_indice_mouse, 0, 3);
-            global.hud_batalha_menu_index = _indice_mouse;
+            if (_mouse_movido) global.hud_batalha_menu_index = _indice_mouse;
         }
 
         if (keyboard_check_pressed(vk_left) || keyboard_check_pressed(vk_up)
@@ -320,6 +323,8 @@ if (global.hud_batalha_menu_estado == "menu")
                 case 1:
                     if (room == cena_batalha)
                     {
+                        global.hud_batalha_item_pendente = "";
+                        global.hud_batalha_pokemon_aviso = "";
                         global.hud_batalha_menu_estado = "pokemon";
                         global.hud_batalha_pokemon_index = treinador_jogador.indice_ativo;
                     }
@@ -335,6 +340,8 @@ if (global.hud_batalha_menu_estado == "menu")
                     }
                     else
                     {
+                        global.hud_batalha_item_pendente = "";
+                        global.hud_batalha_pokemon_aviso = "";
                         global.hud_batalha_menu_estado = "pokemon";
                         global.hud_batalha_pokemon_index = treinador_jogador.indice_ativo;
                     }
@@ -352,10 +359,13 @@ if (global.hud_batalha_menu_estado == "menu")
     exit;
 }
 
-if (_cancelar && !global.hud_batalha_substituicao_obrigatoria)
+if ((_cancelar || _tecla_b)
+    && (global.hud_batalha_menu_estado == "fight" || global.hud_batalha_menu_estado == "bag")
+    && !global.hud_batalha_substituicao_obrigatoria)
 {
+    var _era_bag = (global.hud_batalha_menu_estado == "bag");
     global.hud_batalha_menu_estado = "menu";
-    global.hud_batalha_menu_index = 0;
+    global.hud_batalha_menu_index = _era_bag ? ((room == cena_batalha) ? 2 : 1) : 0;
     exit;
 }
 
@@ -372,13 +382,13 @@ if (global.hud_batalha_menu_estado == "bag")
     var _bag_mouse_y = (mouse_y - _bag_y) / _bag_scale;
     if (_bag_mouse_x >= 0 && _bag_mouse_x <= 145 && _bag_mouse_y >= 0 && _bag_mouse_y <= 150)
     {
-        if (_bag_mouse_y >= 125 && _bag_mouse_x < 72)
+        if (_bag_mouse_y >= 125 && _bag_mouse_x < 72 && _clique_mouse)
         {
             global.menu_bag_divisao = (global.menu_bag_divisao + array_length(global.mochila.divisoes) - 1) mod array_length(global.mochila.divisoes);
             global.hud_batalha_bag_index = 0;
             global.menu_bag_item_index = 0;
         }
-        else if (_bag_mouse_y >= 125 && _bag_mouse_x >= 72)
+        else if (_bag_mouse_y >= 125 && _bag_mouse_x >= 72 && _clique_mouse)
         {
             global.menu_bag_divisao = (global.menu_bag_divisao + 1) mod array_length(global.mochila.divisoes);
             global.hud_batalha_bag_index = 0;
@@ -387,8 +397,11 @@ if (global.hud_batalha_menu_estado == "bag")
         else if (_bag_mouse_y >= 30 && _bag_mouse_y < 114)
         {
             var _bag_mouse_index = clamp(floor((_bag_mouse_y - 30) / 21), 0, max(0, _qtd_itens_bag - 1));
-            global.hud_batalha_bag_index = _bag_mouse_index;
-            global.menu_bag_item_index = _bag_mouse_index;
+            if (_mouse_movido || _clique_mouse)
+            {
+                global.hud_batalha_bag_index = _bag_mouse_index;
+                global.menu_bag_item_index = _bag_mouse_index;
+            }
             if (_clique_mouse) _confirmar = true;
         }
     }
@@ -407,7 +420,8 @@ if (global.hud_batalha_menu_estado == "bag")
     if (mouse_x >= 114 && mouse_x <= 970
         && mouse_y >= 180 && mouse_y <= 180 + (_qtd_itens_bag * 54))
     {
-        global.hud_batalha_bag_index = clamp(floor((mouse_y - 180) / 54), 0, max(0, _qtd_itens_bag - 1));
+        if (_mouse_movido || _clique_mouse)
+            global.hud_batalha_bag_index = clamp(floor((mouse_y - 180) / 54), 0, max(0, _qtd_itens_bag - 1));
         if (_clique_mouse) _confirmar = true;
     }
     if (keyboard_check_pressed(vk_up) || keyboard_check_pressed(ord("W")))
@@ -447,32 +461,16 @@ if (global.hud_batalha_menu_estado == "bag")
             else
             {
                 global.hud_batalha_item_pendente = _id_item_bag;
+                global.hud_batalha_pokemon_aviso = "Escolha um Pokemon para usar " + global.itens[$ _id_item_bag].nome + ".";
                 global.hud_batalha_menu_estado = "pokemon";
                 global.hud_batalha_pokemon_index = treinador_jogador.indice_ativo;
                 exit;
             }
             if (_resultado_item.sucesso)
             {
-                var _log_item = scr_resolver_turno_equipe(treinador_jogador, treinador_ia,
-                    { tipo: "item", mensagem: _resultado_item.mensagem });
-                scr_exibir_log_turno_equipe(_log_item);
                 global.hud_batalha_menu_estado = "menu";
                 global.hud_batalha_menu_index = (room == cena_batalha) ? 2 : 1;
-                if (!scr_equipe_tem_vivos(treinador_jogador))
-                {
-                    teste_batalha_acabou = true;
-                    global.hud_batalha_fim_estado = "derrota";
-                }
-                else if (scr_get_monstro_ativo(treinador_jogador).esta_desmaiado)
-                {
-                    global.hud_batalha_substituicao_obrigatoria = true;
-                    global.hud_batalha_menu_estado = "pokemon";
-                    global.hud_batalha_pokemon_index = 0;
-                }
-                else
-                {
-                    teste_turno += 1;
-                }
+                _acao_hud = { tipo: "item", mensagem: _resultado_item.mensagem };
             }
             else
             {
@@ -481,21 +479,27 @@ if (global.hud_batalha_menu_estado == "bag")
             }
         }
     }
-    exit;
+    if (_acao_hud.tipo == "nenhum") exit;
 }
 
 if (global.hud_batalha_menu_estado == "pokemon_opcoes")
 {
     var _opcao_y = 378;
     if (keyboard_check_pressed(vk_up) || keyboard_check_pressed(ord("W")))
-        global.hud_batalha_pokemon_opcao = max(0, global.hud_batalha_pokemon_opcao - 1);
+        global.hud_batalha_pokemon_opcao = (global.hud_batalha_pokemon_opcao + 2) mod 3;
     if (keyboard_check_pressed(vk_down) || keyboard_check_pressed(ord("S")))
-        global.hud_batalha_pokemon_opcao = min(2, global.hud_batalha_pokemon_opcao + 1);
+        global.hud_batalha_pokemon_opcao = (global.hud_batalha_pokemon_opcao + 1) mod 3;
 
     if (mouse_x >= 1378 && mouse_x <= 1762 && mouse_y >= _opcao_y && mouse_y <= _opcao_y + 180)
     {
-        global.hud_batalha_pokemon_opcao = clamp(floor((mouse_y - _opcao_y) / 60), 0, 2);
+        if (_mouse_movido || _clique_mouse)
+            global.hud_batalha_pokemon_opcao = clamp(floor((mouse_y - _opcao_y) / 60), 0, 2);
         if (_clique_mouse) _confirmar = true;
+    }
+    else if (_clique_mouse && (mouse_x < 1360 || mouse_x > 1780 || mouse_y < 300 || mouse_y > 600))
+    {
+        global.hud_batalha_menu_estado = "pokemon";
+        exit;
     }
 
     if (_tecla_b || _cancelar)
@@ -509,12 +513,35 @@ if (global.hud_batalha_menu_estado == "pokemon_opcoes")
         switch (global.hud_batalha_pokemon_opcao)
         {
             case 0:
+                global.hud_batalha_pokemon_aviso = "";
                 global.hud_batalha_menu_estado = "pokemon_sumario";
                 break;
             case 1:
-                if (!treinador_jogador.monstros[global.hud_batalha_pokemon_index].esta_desmaiado)
+                var _indice_troca = global.hud_batalha_pokemon_index;
+                var _monstro_escolhido = treinador_jogador.monstros[_indice_troca];
+                var _monstro_ativo_atual = scr_get_monstro_ativo(treinador_jogador);
+
+                if (_monstro_escolhido.esta_desmaiado || _monstro_escolhido.hp_atual <= 0)
                 {
-                    var _indice_troca = global.hud_batalha_pokemon_index;
+                    global.hud_batalha_pokemon_aviso = _monstro_escolhido.nome + " esta desmaiado e nao pode lutar!";
+                    global.hud_batalha_menu_estado = "pokemon";
+                }
+                else if (_indice_troca == treinador_jogador.indice_ativo)
+                {
+                    global.hud_batalha_pokemon_aviso = _monstro_escolhido.nome + " ja esta em batalha!";
+                    global.hud_batalha_menu_estado = "pokemon";
+                }
+                else if (!global.hud_batalha_substituicao_obrigatoria
+                    && !_monstro_ativo_atual.esta_desmaiado
+                    && variable_struct_exists(_monstro_ativo_atual, "estados_volateis")
+                    && _monstro_ativo_atual.estados_volateis.preso.ativo)
+                {
+                    global.hud_batalha_pokemon_aviso = _monstro_ativo_atual.nome + " esta preso e nao pode ser substituido!";
+                    global.hud_batalha_menu_estado = "pokemon";
+                }
+                else
+                {
+                    global.hud_batalha_pokemon_aviso = "";
                     if (global.hud_batalha_substituicao_obrigatoria)
                     {
                         var _monstro_antigo_forcado = scr_get_monstro_ativo(treinador_jogador);
@@ -533,29 +560,24 @@ if (global.hud_batalha_menu_estado == "pokemon_opcoes")
                         }]);
                         global.hud_batalha_hp_anim.jogador.atual = _monstro_novo_forcado.hp_atual;
                         global.hud_batalha_hp_anim.jogador.alvo = _monstro_novo_forcado.hp_atual;
+                        var _xp_forcado = scr_progresso_xp_nivel(_monstro_novo_forcado);
+                        global.hud_batalha_xp_anim.jogador.atual = _xp_forcado;
+                        global.hud_batalha_xp_anim.jogador.alvo = _xp_forcado;
+                        global.hud_batalha_substituicao_obrigatoria = false;
+                        global.hud_batalha_fim_estado = "nenhum";
+                        global.hud_batalha_menu_estado = "menu";
+                        global.hud_batalha_menu_index = 0;
+                        if (!teste_batalha_acabou)
+                        {
+                            teste_turno += 1;
+                            scr_exibir_turno_equipe(teste_turno, treinador_jogador, treinador_ia);
+                        }
                     }
                     else
                     {
-                        var _log_troca = scr_resolver_turno_equipe(treinador_jogador, treinador_ia,
-                            { tipo: "trocar", novo_indice: _indice_troca });
-                        scr_exibir_log_turno_equipe(_log_troca);
-                    }
-                    global.hud_batalha_substituicao_obrigatoria = false;
-                    global.hud_batalha_fim_estado = "nenhum";
-                    global.hud_batalha_menu_estado = "menu";
-                    global.hud_batalha_menu_index = (room == cena_batalha) ? 1 : 2;
-                    if (!teste_batalha_acabou)
-                        teste_turno += 1;
-                    if (!scr_equipe_tem_vivos(treinador_jogador))
-                    {
-                        teste_batalha_acabou = true;
-                        global.hud_batalha_fim_estado = "derrota";
-                    }
-                    else if (scr_get_monstro_ativo(treinador_jogador).esta_desmaiado)
-                    {
-                        global.hud_batalha_substituicao_obrigatoria = true;
-                        global.hud_batalha_menu_estado = "pokemon";
-                        global.hud_batalha_pokemon_index = 0;
+                        global.hud_batalha_menu_estado = "menu";
+                        global.hud_batalha_menu_index = (room == cena_batalha) ? 1 : 2;
+                        _acao_hud = { tipo: "trocar", novo_indice: _indice_troca };
                     }
                 }
                 break;
@@ -564,12 +586,25 @@ if (global.hud_batalha_menu_estado == "pokemon_opcoes")
                 break;
         }
     }
-    exit;
+    if (_acao_hud.tipo == "nenhum") exit;
 }
 
 if (global.hud_batalha_menu_estado == "pokemon_sumario")
 {
-    if (_tecla_b || _cancelar || (_clique_mouse && mouse_x >= 1540 && mouse_x <= 1740 && mouse_y >= 1000 && mouse_y <= 1080))
+    var _qtd_sumario = array_length(treinador_jogador.monstros);
+    if (keyboard_check_pressed(vk_up) || keyboard_check_pressed(ord("W"))
+        || keyboard_check_pressed(vk_left) || keyboard_check_pressed(ord("A")))
+    {
+        global.hud_batalha_pokemon_index = max(0, global.hud_batalha_pokemon_index - 1);
+    }
+    else if (keyboard_check_pressed(vk_down) || keyboard_check_pressed(ord("S"))
+        || keyboard_check_pressed(vk_right) || keyboard_check_pressed(ord("D")))
+    {
+        global.hud_batalha_pokemon_index = min(_qtd_sumario - 1, global.hud_batalha_pokemon_index + 1);
+    }
+
+    if (_tecla_b || _cancelar || _confirmar
+        || (_clique_mouse && mouse_x >= 1500 && mouse_x <= 1700 && mouse_y >= 925 && mouse_y <= 995))
     {
         global.hud_batalha_menu_estado = "pokemon_opcoes";
     }
@@ -586,70 +621,84 @@ if (global.hud_batalha_menu_estado == "pokemon")
         if (mouse_x >= _mouse_card_x && mouse_x <= _mouse_card_x + 720
             && mouse_y >= _mouse_card_y && mouse_y <= _mouse_card_y + 170)
         {
-            global.hud_batalha_pokemon_index = _mouse_i;
+            if (_mouse_movido || _clique_mouse)
+                global.hud_batalha_pokemon_index = _mouse_i;
             if (_clique_mouse) _confirmar = true;
             break;
         }
     }
-    if (keyboard_check_pressed(vk_left) || keyboard_check_pressed(vk_up)
-        || keyboard_check_pressed(ord("A")) || keyboard_check_pressed(ord("W")))
+    if (keyboard_check_pressed(vk_left) || keyboard_check_pressed(ord("A")))
     {
         global.hud_batalha_pokemon_index = max(0, global.hud_batalha_pokemon_index - 1);
+        global.hud_batalha_pokemon_aviso = "";
     }
-    if (keyboard_check_pressed(vk_right) || keyboard_check_pressed(vk_down)
-        || keyboard_check_pressed(ord("D")) || keyboard_check_pressed(ord("S")))
+    else if (keyboard_check_pressed(vk_right) || keyboard_check_pressed(ord("D")))
     {
         global.hud_batalha_pokemon_index = min(_qtd_pokemon - 1, global.hud_batalha_pokemon_index + 1);
+        global.hud_batalha_pokemon_aviso = "";
+    }
+    else if (keyboard_check_pressed(vk_up) || keyboard_check_pressed(ord("W")))
+    {
+        global.hud_batalha_pokemon_index = max(0, global.hud_batalha_pokemon_index - 2);
+        global.hud_batalha_pokemon_aviso = "";
+    }
+    else if (keyboard_check_pressed(vk_down) || keyboard_check_pressed(ord("S")))
+    {
+        global.hud_batalha_pokemon_index = min(_qtd_pokemon - 1, global.hud_batalha_pokemon_index + 2);
+        global.hud_batalha_pokemon_aviso = "";
     }
 
     if (_confirmar)
     {
         var _novo_indice = global.hud_batalha_pokemon_index;
-        if (_novo_indice >= 0 && _novo_indice < _qtd_pokemon
-            && !treinador_jogador.monstros[_novo_indice].esta_desmaiado)
+        if (_novo_indice >= 0 && _novo_indice < _qtd_pokemon)
         {
+            var _monstro_sel = treinador_jogador.monstros[_novo_indice];
             if (global.hud_batalha_item_pendente != "")
             {
                 var _item_pendente = global.hud_batalha_item_pendente;
-                var _resultado_item = scr_mochila_usar_item_em_batalha(_item_pendente,
-                    treinador_jogador.monstros[_novo_indice]);
-                global.hud_batalha_item_pendente = "";
+                var _resultado_item = scr_mochila_usar_item_em_batalha(_item_pendente, _monstro_sel);
                 if (_resultado_item.sucesso)
                 {
-                    var _log_item = scr_resolver_turno_equipe(treinador_jogador, treinador_ia,
-                        { tipo: "item", mensagem: _resultado_item.mensagem });
-                    scr_exibir_log_turno_equipe(_log_item);
+                    global.hud_batalha_item_pendente = "";
+                    global.hud_batalha_pokemon_aviso = "";
                     global.hud_batalha_menu_estado = "menu";
                     global.hud_batalha_menu_index = (room == cena_batalha) ? 2 : 1;
-                    teste_turno += 1;
+                    _acao_hud = { tipo: "item", mensagem: _resultado_item.mensagem };
                 }
                 else
                 {
-                    show_debug_message(_resultado_item.mensagem);
-                    global.hud_batalha_menu_estado = "bag";
+                    global.hud_batalha_pokemon_aviso = _resultado_item.mensagem;
                 }
             }
             else
             {
-                global.hud_batalha_pokemon_opcao = 0;
+                global.hud_batalha_pokemon_aviso = "";
+                global.hud_batalha_pokemon_opcao = (_monstro_sel.esta_desmaiado || _novo_indice == treinador_jogador.indice_ativo) ? 0 : 1;
                 global.hud_batalha_menu_estado = "pokemon_opcoes";
             }
         }
     }
-    if (_tecla_b || _cancelar || (_clique_mouse && mouse_x >= 1660 && mouse_x <= 1740 && mouse_y >= 1000 && mouse_y <= 1080))
+    else if (_tecla_b || _cancelar || (_clique_mouse && mouse_x >= 1580 && mouse_x <= 1774 && mouse_y >= 935 && mouse_y <= 1015))
     {
-        if (global.hud_batalha_item_pendente != "")
+        if (global.hud_batalha_substituicao_obrigatoria)
+        {
+            global.hud_batalha_pokemon_aviso = "Escolha um Pokemon para substituir o que desmaiou!";
+        }
+        else if (global.hud_batalha_item_pendente != "")
         {
             global.hud_batalha_item_pendente = "";
+            global.hud_batalha_pokemon_aviso = "";
             global.hud_batalha_menu_estado = "bag";
         }
         else
         {
+            global.hud_batalha_pokemon_aviso = "";
             global.hud_batalha_menu_estado = "menu";
             global.hud_batalha_menu_index = (room == cena_batalha) ? 1 : 2;
         }
     }
-    exit;
+    if (_acao_hud.tipo == "nenhum") exit;
 }
 
 if (keyboard_check_pressed(ord("C")))
@@ -698,7 +747,7 @@ if (pendente_substituicao)
 
 if (!teste_batalha_acabou)
 {
-    var _acao = scr_jogador_escolher_acao(treinador_jogador);
+    var _acao = (_acao_hud.tipo != "nenhum") ? _acao_hud : scr_jogador_escolher_acao(treinador_jogador);
 
     if (_acao.tipo != "nenhum")
     {
