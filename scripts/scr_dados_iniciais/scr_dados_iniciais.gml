@@ -572,6 +572,8 @@ function scr_mochila_usar_item_em_batalha(item_id, monstro)
     var _item = global.itens[$ item_id];
     if (!variable_struct_exists(global.mochila.itens, item_id) || global.mochila.itens[$ item_id] <= 0)
         return { sucesso: false, mensagem: "Voce nao possui esse item." };
+    if (monstro.esta_desmaiado || monstro.hp_atual <= 0)
+        return { sucesso: false, mensagem: monstro.nome + " esta desmaiado e nao pode usar este item." };
     if (_item.utilidade == "cura")
     {
         if (monstro.hp_atual >= monstro.hp_max) return { sucesso: false, mensagem: monstro.nome + " ja esta com HP cheio." };

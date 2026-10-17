@@ -43,6 +43,7 @@ global.hud_batalha_acao_timer = 0;
 global.hud_batalha_delay_segundos = 0.9;
 global.hud_batalha_fim_estado = "nenhum";
 global.hud_batalha_substituicao_obrigatoria = false;
+global.hud_batalha_pokemon_aviso = "";
 global.menu_treinador_aberto = false;
 global.menu_treinador_index = 0;
 global.menu_treinador_submenu = "";

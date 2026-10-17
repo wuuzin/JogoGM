@@ -120,6 +120,22 @@ if (room == cena_batalha)
         draw_set_valign(fa_top);
         draw_set_color(c_black);
     }
+    else if (global.hud_batalha_menu_estado == "pokemon")
+    {
+        draw_set_font(Pokemon);
+        scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador);
+    }
+    else if (global.hud_batalha_menu_estado == "pokemon_opcoes")
+    {
+        draw_set_font(Pokemon);
+        scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador);
+        scr_hud_batalha_desenhar_opcoes_pokemon(treinador_jogador);
+    }
+    else if (global.hud_batalha_menu_estado == "pokemon_sumario")
+    {
+        draw_set_font(Pokemon);
+        scr_hud_batalha_desenhar_sumario_pokemon(treinador_jogador);
+    }
     exit;
 }
 
