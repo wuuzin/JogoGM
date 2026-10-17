@@ -1,3 +1,9 @@
+if (instance_number(obj_game) > 1)
+{
+    instance_destroy();
+    exit;
+}
+
 scr_tipos_init();
 scr_efetividade_init();
 scr_habilidades_init();

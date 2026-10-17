@@ -7,12 +7,6 @@ if (variable_global_exists("retorno_enfermeira_pendente") && global.retorno_enfe
     global.retorno_enfermeira_pendente = false;
 }
 
-if (keyboard_check_pressed(vk_space))
-{
-    var _enfermeira = instance_nearest(x, y, obj_enfermeira);
-    if (instance_exists(_enfermeira))
-        scr_enfermeira_interagir(_enfermeira);
-}
 
 if (global.menu_treinador_aberto && (!variable_global_exists("em_batalha") || !global.em_batalha))
 {
