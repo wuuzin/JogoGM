@@ -23,11 +23,21 @@ function scr_resolver_turno_equipe(treinador_jogador, treinador_ia, acao_jogador
             return _log;
         }
 
+        if (!_p1.esta_desmaiado && _p1.estados_volateis.preso.ativo)
+        {
+            _push_log(_log, { tipo_acao: "erro", mensagem: _p1.nome + " está preso e não pode ser trocado!", is_enemy: false }, _p1, _p2);
+            return _log;
+        }
+
         var _monstro_antigo = scr_get_monstro_ativo(treinador_jogador);
         scr_resetar_status_temporarios(_monstro_antigo);
         treinador_jogador.indice_ativo = acao_jogador.novo_indice;
         var _novo_monstro = scr_get_monstro_ativo(treinador_jogador);
         _p1 = _novo_monstro;
+
+        if (_p2.apaixonado) _p2.apaixonado = false;
+        if (_p2.estados_volateis.leech_seed && _p2.estados_volateis.leech_seed_de == _monstro_antigo)
+            _p2.estados_volateis.leech_seed_de = _novo_monstro;
 
         _push_log(_log, { tipo_acao: "trocar", treinador_nome: "Jogador", saiu_nome: _monstro_antigo.nome, entrou_nome: _novo_monstro.nome, is_enemy: false }, _p1, _p2);
 
@@ -46,10 +56,10 @@ function scr_resolver_turno_equipe(treinador_jogador, treinador_ia, acao_jogador
                 _push_log(_log, { atacante_nome: _p2.nome, movimento_nome: "", sucesso: false, motivo: !_st_p2.pode ? _st_p2.motivo : _vol_p2.motivo, is_enemy: true }, _p1, _p2);
             }
         }
-        return _log;
-    }
 
-    if (acao_jogador.tipo == "item")
+        if (_p1.esta_desmaiado || _p2.esta_desmaiado) return _log;
+    }
+    else if (acao_jogador.tipo == "item")
     {
         _push_log(_log, { tipo_acao: "item", mensagem: acao_jogador.mensagem, is_enemy: false }, _p1, _p2);
 
@@ -69,47 +79,52 @@ function scr_resolver_turno_equipe(treinador_jogador, treinador_ia, acao_jogador
                     motivo: !_st_item_p2.pode ? _st_item_p2.motivo : _vol_item_p2.motivo, is_enemy: true }, _p1, _p2);
             }
         }
-        return _log;
-    }
 
-    var _ordem = scr_decidir_ordem_turno(_p1, acao_jogador.indice, _p2, _acao_ia.indice);
-    var _primeiro = _ordem[0];
-    var _segundo = _ordem[1];
-    var _ind_primeiro = (_primeiro == _p1) ? acao_jogador.indice : _acao_ia.indice;
-    var _ind_segundo = (_segundo == _p1) ? acao_jogador.indice : _acao_ia.indice;
-    var _alvo_primeiro = (_primeiro == _p1) ? _p2 : _p1;
-    var _alvo_segundo = (_segundo == _p1) ? _p2 : _p1;
-
-    // --- 1º ATACANTE ---
-    var _st_primeiro = scr_pode_atacar_status(_primeiro);
-    var _vol_primeiro = _st_primeiro.pode ? scr_pode_atacar_volatil(_primeiro) : { pode: true, motivo: "" };
-    
-    if (_st_primeiro.pode && _vol_primeiro.pode)
-    {
-        var _res_primeiro = scr_executar_acao(_primeiro, _alvo_primeiro, _ind_primeiro);
-        _res_primeiro.is_enemy = (_primeiro == _p2);
-        _push_log(_log, _res_primeiro, _p1, _p2);
+        if (_p1.esta_desmaiado || _p2.esta_desmaiado) return _log;
     }
     else
     {
-        _push_log(_log, { atacante_nome: _primeiro.nome, movimento_nome: "", sucesso: false, motivo: !_st_primeiro.pode ? _st_primeiro.motivo : _vol_primeiro.motivo, is_enemy: (_primeiro == _p2) }, _p1, _p2);
-    }
+        var _ordem = scr_decidir_ordem_turno(_p1, acao_jogador.indice, _p2, _acao_ia.indice);
+        var _primeiro = _ordem[0];
+        var _segundo = _ordem[1];
+        var _ind_primeiro = (_primeiro == _p1) ? acao_jogador.indice : _acao_ia.indice;
+        var _ind_segundo = (_segundo == _p1) ? acao_jogador.indice : _acao_ia.indice;
+        var _alvo_primeiro = (_primeiro == _p1) ? _p2 : _p1;
+        var _alvo_segundo = (_segundo == _p1) ? _p2 : _p1;
 
-    if (_alvo_primeiro.esta_desmaiado) return _log;
+        // --- 1º ATACANTE ---
+        var _st_primeiro = scr_pode_atacar_status(_primeiro);
+        var _vol_primeiro = _st_primeiro.pode ? scr_pode_atacar_volatil(_primeiro) : { pode: true, motivo: "" };
+        
+        if (_st_primeiro.pode && _vol_primeiro.pode)
+        {
+            var _res_primeiro = scr_executar_acao(_primeiro, _alvo_primeiro, _ind_primeiro);
+            _res_primeiro.is_enemy = (_primeiro == _p2);
+            _push_log(_log, _res_primeiro, _p1, _p2);
+        }
+        else
+        {
+            _push_log(_log, { atacante_nome: _primeiro.nome, movimento_nome: "", sucesso: false, motivo: !_st_primeiro.pode ? _st_primeiro.motivo : _vol_primeiro.motivo, is_enemy: (_primeiro == _p2) }, _p1, _p2);
+        }
 
-    // --- 2º ATACANTE ---
-    var _st_segundo = scr_pode_atacar_status(_segundo);
-    var _vol_segundo = _st_segundo.pode ? scr_pode_atacar_volatil(_segundo) : { pode: true, motivo: "" };
+        if (_alvo_primeiro.esta_desmaiado) return _log;
 
-    if (_st_segundo.pode && _vol_segundo.pode)
-    {
-        var _res_segundo = scr_executar_acao(_segundo, _alvo_segundo, _ind_segundo);
-        _res_segundo.is_enemy = (_segundo == _p2);
-        _push_log(_log, _res_segundo, _p1, _p2);
-    }
-    else
-    {
-        _push_log(_log, { atacante_nome: _segundo.nome, movimento_nome: "", sucesso: false, motivo: !_st_segundo.pode ? _st_segundo.motivo : _vol_segundo.motivo, is_enemy: (_segundo == _p2) }, _p1, _p2);
+        // --- 2º ATACANTE ---
+        var _st_segundo = scr_pode_atacar_status(_segundo);
+        var _vol_segundo = _st_segundo.pode ? scr_pode_atacar_volatil(_segundo) : { pode: true, motivo: "" };
+
+        if (_st_segundo.pode && _vol_segundo.pode)
+        {
+            var _res_segundo = scr_executar_acao(_segundo, _alvo_segundo, _ind_segundo);
+            _res_segundo.is_enemy = (_segundo == _p2);
+            _push_log(_log, _res_segundo, _p1, _p2);
+        }
+        else
+        {
+            _push_log(_log, { atacante_nome: _segundo.nome, movimento_nome: "", sucesso: false, motivo: !_st_segundo.pode ? _st_segundo.motivo : _vol_segundo.motivo, is_enemy: (_segundo == _p2) }, _p1, _p2);
+        }
+
+        if (_alvo_segundo.esta_desmaiado) return _log;
     }
 
     // --- STATUS E CLIMA ---
