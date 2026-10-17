@@ -307,6 +307,16 @@ function scr_iniciar_batalha(equipe_ia_ids, nivel_ia, id_treinador)
     }
 
     treinador_jogador = global.equipe_jogador;
+    var _primeiro_vivo = -1;
+    for (var _i_eq = 0; _i_eq < array_length(treinador_jogador.monstros); _i_eq++)
+    {
+        scr_resetar_status_temporarios(treinador_jogador.monstros[_i_eq]);
+        if (_primeiro_vivo == -1 && !treinador_jogador.monstros[_i_eq].esta_desmaiado)
+            _primeiro_vivo = _i_eq;
+    }
+    if (_primeiro_vivo != -1)
+        treinador_jogador.indice_ativo = _primeiro_vivo;
+
     treinador_ia = scr_criar_equipe(equipe_ia_ids, nivel_ia);
     treinador_ia.eh_selvagem = (id_treinador == noone);
     treinador_atual_id = id_treinador; // guarda quem chamou, pra avisar quando a batalha acabar
@@ -315,10 +325,11 @@ function scr_iniciar_batalha(equipe_ia_ids, nivel_ia, id_treinador)
     global.hud_batalha_menu_estado = "menu";
     global.hud_batalha_menu_index = 0;
     global.hud_batalha_golpe_index = 0;
-    global.hud_batalha_pokemon_index = 0;
+    global.hud_batalha_pokemon_index = treinador_jogador.indice_ativo;
     global.hud_batalha_pokemon_opcao = 0;
     global.hud_batalha_bag_index = 0;
     global.hud_batalha_item_pendente = "";
+    global.hud_batalha_pokemon_aviso = "";
     global.menu_treinador_aberto = false;
     global.menu_treinador_submenu = "";
     global.hud_batalha_fim_estado = "nenhum";
