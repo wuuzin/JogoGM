@@ -985,8 +985,17 @@ if (!teste_batalha_acabou)
             && scr_equipe_tem_vivos(treinador_jogador))
         {
             global.hud_batalha_substituicao_obrigatoria = true;
+            global.hud_batalha_pokemon_aviso = "Escolha um Pokemon para continuar!";
             global.hud_batalha_menu_estado = "pokemon";
             global.hud_batalha_pokemon_index = 0;
+            for (var _idx_vivo = 0; _idx_vivo < array_length(treinador_jogador.monstros); _idx_vivo++)
+            {
+                if (!treinador_jogador.monstros[_idx_vivo].esta_desmaiado)
+                {
+                    global.hud_batalha_pokemon_index = _idx_vivo;
+                    break;
+                }
+            }
         }
         else if (!scr_equipe_tem_vivos(treinador_jogador))
         {
