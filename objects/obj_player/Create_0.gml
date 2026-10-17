@@ -12,7 +12,7 @@ spdv = 0;
 freio = 2;
 face = "down";
 
-obj_grama_iniciar();
+scr_grama_passo_iniciar();
 
 if (variable_global_exists("retorno_enfermeira_pendente") && global.retorno_enfermeira_pendente)
 {
