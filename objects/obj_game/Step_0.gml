@@ -159,6 +159,7 @@ if (global.hud_batalha_dialogo_texto != "" || array_length(global.hud_batalha_di
 
             if (global.hud_batalha_fim_estado == "vitoria")
             {
+                global.hud_batalha_fim_estado = "nenhum";
                 global.em_batalha = false;
                 global.menu_treinador_aberto = false;
                 global.menu_treinador_submenu = "";

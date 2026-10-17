@@ -1,18 +1,29 @@
+if (variable_global_exists("obj_game_instancia") && instance_exists(global.obj_game_instancia) && global.obj_game_instancia != id)
+{
+    instance_destroy();
+    exit;
+}
+global.obj_game_instancia = id;
+
 if (instance_number(obj_game) > 1)
 {
     instance_destroy();
     exit;
 }
 
-scr_tipos_init();
-scr_efetividade_init();
-scr_habilidades_init();
-scr_movimentos_init();
-scr_natures_init();
-scr_especies_init();
-scr_campo_init();
-scr_itens_init();
-scr_mochila_init();
+if (!variable_global_exists("dados_iniciais_carregados"))
+{
+    global.dados_iniciais_carregados = true;
+    scr_tipos_init();
+    scr_efetividade_init();
+    scr_habilidades_init();
+    scr_movimentos_init();
+    scr_natures_init();
+    scr_especies_init();
+    scr_campo_init();
+    scr_itens_init();
+    scr_mochila_init();
+}
 global.hud_batalha_dialogo_is_enemy = false;
 global.hud_batalha_hp_anim = { 
     jogador: { atual: 0, alvo: 0 }, 
@@ -66,4 +77,7 @@ global.hud_batalha_item_pendente = "";
 pendente_substituicao = false;
 movimento_pendente_id = "";
 monstro_pendente = undefined;
-global.equipe_jogador = scr_criar_equipe(["charmander"], 5); // time do jogador — só criado uma vez
+if (!variable_global_exists("equipe_jogador") || !is_struct(global.equipe_jogador))
+{
+    global.equipe_jogador = scr_criar_equipe(["charmander"], 5); // time do jogador - so criado uma vez
+}
