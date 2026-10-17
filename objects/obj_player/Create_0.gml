@@ -23,3 +23,8 @@ if (variable_global_exists("retorno_enfermeira_pendente") && global.retorno_enfe
         global.retorno_enfermeira_pendente = false;
     }
 }
+else if (variable_global_exists("player_x_antes_da_batalha") && variable_global_exists("player_y_antes_da_batalha"))
+{
+    x = global.player_x_antes_da_batalha;
+    y = global.player_y_antes_da_batalha;
+}

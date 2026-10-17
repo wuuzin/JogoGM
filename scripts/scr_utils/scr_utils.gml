@@ -363,6 +363,11 @@ function scr_iniciar_batalha(equipe_ia_ids, nivel_ia, id_treinador)
 
     global.em_batalha = true;
     global.sala_antes_da_batalha = room;
+    if (instance_exists(obj_player))
+    {
+        global.player_x_antes_da_batalha = obj_player.x;
+        global.player_y_antes_da_batalha = obj_player.y;
+    }
 
     show_debug_message("");
     show_debug_message("=============================================");
