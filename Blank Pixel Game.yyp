@@ -60,7 +60,6 @@
     {"id":{"name":"scr_debug_logs","path":"scripts/scr_debug_logs/scr_debug_logs.yy",},},
     {"id":{"name":"scr_enfermeira","path":"scripts/scr_enfermeira/scr_enfermeira.yy",},},
     {"id":{"name":"scr_grama","path":"scripts/scr_grama/scr_grama.yy",},},
-    {"id":{"name":"scr_hud_batalha","path":"scripts/scr_hud_batalha/scr_hud_batalha.yy",},},
     {"id":{"name":"scr_monstro_gerenciador","path":"scripts/scr_monstro_gerenciador/scr_monstro_gerenciador.yy",},},
     {"id":{"name":"scr_movimento_gerenciador","path":"scripts/scr_movimento_gerenciador/scr_movimento_gerenciador.yy",},},
     {"id":{"name":"scr_status_gerenciador","path":"scripts/scr_status_gerenciador/scr_status_gerenciador.yy",},},

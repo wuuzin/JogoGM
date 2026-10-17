@@ -57,10 +57,13 @@ if (room == cena_batalha)
         for (var _i_ataque = 0; _i_ataque < 4; _i_ataque++)
         {
             var _sprite_ataque = atk_test;
+            var _movimento = undefined;
+            var _dados_movimento = undefined;
+
             if (_i_ataque < _qtd_ataques)
             {
-                var _movimento = _pokemon_ativo.movimentos[_i_ataque];
-                var _dados_movimento = global.movimentos[$ _movimento.movimento_id];
+                _movimento = _pokemon_ativo.movimentos[_i_ataque];
+                _dados_movimento = global.movimentos[$ _movimento.movimento_id];
                 var _sprite_tipo = scr_hud_batalha_sprite_tipo_movimento(_dados_movimento.tipo);
                 if (_sprite_tipo != -1) _sprite_ataque = _sprite_tipo;
             }
