@@ -458,28 +458,6 @@ function scr_menu_treinador_desenhar()
             case "opcoes": draw_text_transformed(_x - 158, _y + 34, "Opcoes em breve.", _escala_fonte, _escala_fonte, 0); break;
         }
 
-        function scr_menu_bag_opcoes_desenhar(_x, _y)
-        {
-            var _item = global.itens[$ global.menu_bag_item_pendente];
-            var _pode_segur = variable_struct_exists(_item, "seguravel") && _item.seguravel;
-            var _labels = _pode_segur ? ["USAR", "SEGURAR", "JOGAR FORA"] : ["USAR", "JOGAR FORA"];
-            var _w = 145;
-            var _h = 38 + (array_length(_labels) * 24);
-            draw_set_color(c_black);
-            draw_rectangle(_x, _y, _x + _w, _y + _h, false);
-            draw_set_color(c_white);
-            draw_rectangle(_x + 2, _y + 2, _x + _w - 2, _y + _h - 2, true);
-            draw_text_transformed(_x + 8, _y + 8, string_upper(_item.nome), 0.24, 0.24, 0);
-            for (var _i = 0; _i < array_length(_labels); _i++)
-            {
-                var _linha_y = _y + 28 + (_i * 24);
-                draw_set_color(_i == global.menu_bag_opcao ? make_color_rgb(70, 70, 70) : c_black);
-                draw_rectangle(_x + 6, _linha_y - 2, _x + _w - 6, _linha_y + 18, false);
-                draw_set_color(c_white);
-                draw_text_transformed(_x + 12, _linha_y, _labels[_i], 0.22, 0.22, 0);
-            }
-        }
-
         draw_text_transformed(_x - 158, _y + 112, "ESC: voltar", _escala_fonte, _escala_fonte, 0);
     }
 
