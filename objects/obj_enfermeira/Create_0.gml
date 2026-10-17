@@ -1,1 +1,1 @@
-raio_interacao = 32;
+raio_interacao = 20;
