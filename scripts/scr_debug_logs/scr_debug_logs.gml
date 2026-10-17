@@ -949,7 +949,7 @@ function scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador)
     var _panel_x = 90;
     var _panel_y = 90;
     var _panel_w = 1740;
-    var _panel_h = 1040;
+    var _panel_h = 950;
 
     draw_set_color(c_white);
     draw_rectangle_color(_panel_x, _panel_y, _panel_x + _panel_w, _panel_y + _panel_h, c_black, c_black, c_black, c_black, false);
@@ -957,7 +957,10 @@ function scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador)
 
     draw_set_halign(fa_center);
     draw_set_valign(fa_middle);
-    draw_text(_panel_x + (_panel_w * 0.5), _panel_y + 34, "CHOOSE A POKÉMON");
+    var _titulo_menu = "CHOOSE A POKEMON";
+    if (variable_global_exists("hud_batalha_item_pendente") && global.hud_batalha_item_pendente != "")
+        _titulo_menu = "USE ITEM ON WHICH POKEMON?";
+    draw_text(_panel_x + (_panel_w * 0.5), _panel_y + 34, _titulo_menu);
 
     var _card_w = 720;
     var _card_h = 170;
@@ -990,10 +993,23 @@ function scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador)
         draw_rectangle_color(_icon_x, _icon_y, _icon_x + _icon_w, _icon_y + _icon_w, _fill, _fill, _fill, _fill, false);
         draw_rectangle_color(_icon_x, _icon_y, _icon_x + _icon_w, _icon_y + _icon_w, _border, _border, _border, _border, true);
 
-        draw_set_color(_text_col);
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_middle);
-        draw_text(_icon_x + (_icon_w * 0.5), _icon_y + (_icon_w * 0.5), "PK");
+        var _spr_card = scr_batalha_sprite_pokemon_resolver(_m, false);
+        if (_spr_card != -1)
+        {
+            var _spr_w = max(1, sprite_get_width(_spr_card));
+            var _spr_h = max(1, sprite_get_height(_spr_card));
+            var _escala_spr = min((_icon_w - 12) / _spr_w, (_icon_w - 12) / _spr_h);
+            var _draw_sx = _icon_x + (_icon_w * 0.5) - ((_spr_w * 0.5 - sprite_get_xoffset(_spr_card)) * _escala_spr);
+            var _draw_sy = _icon_y + (_icon_w * 0.5) - ((_spr_h * 0.5 - sprite_get_yoffset(_spr_card)) * _escala_spr);
+            draw_sprite_ext(_spr_card, 0, _draw_sx, _draw_sy, _escala_spr, _escala_spr, 0, c_white, 1);
+        }
+        else
+        {
+            draw_set_color(_text_col);
+            draw_set_halign(fa_center);
+            draw_set_valign(fa_middle);
+            draw_text(_icon_x + (_icon_w * 0.5), _icon_y + (_icon_w * 0.5), "PK");
+        }
 
         var _genero = "";
         if (variable_struct_exists(_m, "genero"))
@@ -1005,6 +1021,7 @@ function scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador)
 
         var _info_x = _x + 156;
         var _info_y = _y + 18;
+        draw_set_color(_text_col);
         draw_set_halign(fa_left);
         draw_set_valign(fa_top);
         draw_text(_info_x, _info_y, string_upper(_m.nome));
@@ -1024,8 +1041,27 @@ function scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador)
         var _hp_w = max(220, _card_w - 290);
         scr_hud_batalha_desenhar_barra_hp(_hp_x, _hp_y, _hp_w, _m.hp_atual, _m.hp_max, make_color_rgb(70, 70, 70), make_color_rgb(90, 220, 110));
 
+        draw_set_color(_text_col);
         draw_set_halign(fa_right);
         draw_text(_x + _card_w - 18, _y + 72, string(_m.hp_atual) + "/" + string(_m.hp_max));
+
+        if (!_m.esta_desmaiado && variable_struct_exists(_m, "status") && _m.status != "nenhum")
+        {
+            var _sigla_st = string_upper(string_copy(_m.status, 1, 3));
+            if (_m.status == "queimadura") _sigla_st = "BRN";
+            else if (_m.status == "envenenamento") _sigla_st = "PSN";
+            else if (_m.status == "intoxicacao") _sigla_st = "TOX";
+            else if (_m.status == "paralisia") _sigla_st = "PAR";
+            else if (_m.status == "sono") _sigla_st = "SLP";
+            else if (_m.status == "congelamento") _sigla_st = "FRZ";
+
+            draw_set_color(make_color_rgb(220, 120, 40));
+            draw_rectangle_color(_info_x, _y + 122, _info_x + 84, _y + 148, make_color_rgb(220, 120, 40), make_color_rgb(220, 120, 40), make_color_rgb(220, 120, 40), make_color_rgb(220, 120, 40), false);
+            draw_set_color(c_black);
+            draw_set_halign(fa_center);
+            draw_set_valign(fa_middle);
+            draw_text(_info_x + 42, _y + 135, _sigla_st);
+        }
 
         draw_set_halign(fa_left);
         draw_set_valign(fa_top);
@@ -1062,11 +1098,27 @@ function scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador)
         draw_set_color(c_white);
     }
 
-    draw_set_halign(fa_center);
-    draw_set_valign(fa_middle);
-    draw_rectangle_color(_panel_x + _panel_w - 160, _panel_y + _panel_h - 130, _panel_x + _panel_w - 80, _panel_y + _panel_h - 50, c_black, c_black, c_black, c_black, false);
-    draw_rectangle_color(_panel_x + _panel_w - 160, _panel_y + _panel_h - 130, _panel_x + _panel_w - 80, _panel_y + _panel_h - 50, c_white, c_white, c_white, c_white, true);
-    draw_text(_panel_x + _panel_w - 120, _panel_y + _panel_h - 90, "B VOLTAR");
+    if (variable_global_exists("hud_batalha_pokemon_aviso") && global.hud_batalha_pokemon_aviso != "")
+    {
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_middle);
+        draw_set_color(c_yellow);
+        draw_text(_panel_x + 56, _panel_y + _panel_h - 65, global.hud_batalha_pokemon_aviso);
+    }
+
+    if (!global.hud_batalha_substituicao_obrigatoria)
+    {
+        var _btn_x1 = _panel_x + _panel_w - 250;
+        var _btn_y1 = _panel_y + _panel_h - 105;
+        var _btn_x2 = _panel_x + _panel_w - 56;
+        var _btn_y2 = _panel_y + _panel_h - 25;
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
+        draw_rectangle_color(_btn_x1, _btn_y1, _btn_x2, _btn_y2, c_black, c_black, c_black, c_black, false);
+        draw_rectangle_color(_btn_x1, _btn_y1, _btn_x2, _btn_y2, c_white, c_white, c_white, c_white, true);
+        draw_set_color(c_white);
+        draw_text((_btn_x1 + _btn_x2) * 0.5, (_btn_y1 + _btn_y2) * 0.5, "B VOLTAR");
+    }
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
@@ -1076,6 +1128,15 @@ function scr_hud_batalha_desenhar_menu_pokemon(treinador_jogador)
 function scr_hud_batalha_desenhar_opcoes_pokemon(treinador_jogador)
 {
     var _m = treinador_jogador.monstros[global.hud_batalha_pokemon_index];
+    var _ativo_atual = scr_get_monstro_ativo(treinador_jogador);
+    var _bloqueado_preso = !global.hud_batalha_substituicao_obrigatoria
+        && !_ativo_atual.esta_desmaiado
+        && variable_struct_exists(_ativo_atual, "estados_volateis")
+        && _ativo_atual.estados_volateis.preso.ativo;
+    var _troca_indisponivel = _m.esta_desmaiado
+        || (global.hud_batalha_pokemon_index == treinador_jogador.indice_ativo)
+        || _bloqueado_preso;
+
     var _x = 1360;
     var _y = 300;
     var _w = 420;
@@ -1085,21 +1146,27 @@ function scr_hud_batalha_desenhar_opcoes_pokemon(treinador_jogador)
     draw_set_color(c_black);
     draw_rectangle_color(_x, _y, _x + _w, _y + _h, c_black, c_black, c_black, c_black, false);
     draw_rectangle_color(_x, _y, _x + _w, _y + _h, c_white, c_white, c_white, c_white, true);
+    draw_set_color(c_white);
     draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
     draw_text(_x + 24, _y + 24, string_upper(_m.nome));
 
     for (var _i = 0; _i < 3; _i++)
     {
         var _linha_y = _y + 78 + (_i * 60);
         var _selecionado = (_i == global.hud_batalha_pokemon_opcao);
+        var _desabilitado = (_i == 1 && _troca_indisponivel);
         if (_selecionado)
         {
             draw_set_color(c_white);
             draw_rectangle_color(_x + 18, _linha_y, _x + _w - 18, _linha_y + 44,
                 c_white, c_white, c_white, c_white, false);
-            draw_set_color(c_black);
+            draw_set_color(_desabilitado ? make_color_rgb(110, 110, 110) : c_black);
         }
-        else draw_set_color(c_white);
+        else
+        {
+            draw_set_color(_desabilitado ? c_gray : c_white);
+        }
         draw_text(_x + 34, _linha_y + 12, _labels[_i]);
     }
     draw_set_color(c_white);
@@ -1111,7 +1178,7 @@ function scr_hud_batalha_desenhar_sumario_pokemon(treinador_jogador)
 {
     var _m = treinador_jogador.monstros[global.hud_batalha_pokemon_index];
     var _x = 180;
-    var _y = 120;
+    var _y = 100;
     var _w = 1560;
     var _h = 920;
 
@@ -1120,27 +1187,70 @@ function scr_hud_batalha_desenhar_sumario_pokemon(treinador_jogador)
     draw_rectangle_color(_x, _y, _x + _w, _y + _h, c_white, c_white, c_white, c_white, true);
     draw_set_color(c_white);
     draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
     draw_text(_x + 32, _y + 28, "SUMARIO");
+
+    var _spr_sumario = scr_batalha_sprite_pokemon_resolver(_m, false);
+    if (_spr_sumario != -1)
+    {
+        var _box_x = _x + 520;
+        var _box_y = _y + 84;
+        var _box_s = 140;
+        draw_rectangle_color(_box_x, _box_y, _box_x + _box_s, _box_y + _box_s, c_white, c_white, c_white, c_white, true);
+        var _sw = max(1, sprite_get_width(_spr_sumario));
+        var _sh = max(1, sprite_get_height(_spr_sumario));
+        var _esc = min((_box_s - 16) / _sw, (_box_s - 16) / _sh);
+        var _sx = _box_x + (_box_s * 0.5) - ((_sw * 0.5 - sprite_get_xoffset(_spr_sumario)) * _esc);
+        var _sy = _box_y + (_box_s * 0.5) - ((_sh * 0.5 - sprite_get_yoffset(_spr_sumario)) * _esc);
+        draw_sprite_ext(_spr_sumario, 0, _sx, _sy, _esc, _esc, 0, c_white, 1);
+    }
+
+    var _tipo_str = string_upper(_m.tipo1);
+    if (_m.tipo2 != "nenhum" && _m.tipo2 != "")
+        _tipo_str += " / " + string_upper(_m.tipo2);
+
+    var _item_nome = "NENHUM";
+    if (variable_struct_exists(_m, "held_item") && _m.held_item != "" && _m.held_item != "nenhum")
+    {
+        _item_nome = (variable_global_exists("itens") && variable_struct_exists(global.itens, _m.held_item))
+            ? string_upper(global.itens[$ _m.held_item].nome)
+            : string_upper(string(_m.held_item));
+    }
+
     draw_text(_x + 32, _y + 90, string_upper(_m.nome) + "  Lv." + string(_m.nivel));
-    draw_text(_x + 32, _y + 140, "TIPO: " + string_upper(_m.tipo1) + " / " + string_upper(_m.tipo2));
+    draw_text(_x + 32, _y + 140, "TIPO: " + _tipo_str);
     draw_text(_x + 32, _y + 190, "GENERO: " + string_upper(_m.genero));
     draw_text(_x + 32, _y + 240, "HABILIDADE: " + string_upper(_m.habilidade));
     draw_text(_x + 32, _y + 290, "NATUREZA: " + string_upper(_m.nature.nome));
     draw_text(_x + 32, _y + 340, "STATUS: " + string_upper(_m.status));
-    draw_text(_x + 32, _y + 390, "HP: " + string(_m.hp_atual) + "/" + string(_m.hp_max));
-    draw_text(_x + 32, _y + 440, "EXP: " + string(_m.xp) + "/" + string(_m.xp_prox_nivel));
+    draw_text(_x + 32, _y + 390, "ITEM: " + _item_nome);
+    draw_text(_x + 32, _y + 440, "HP: " + string(_m.hp_atual) + "/" + string(_m.hp_max));
+    draw_text(_x + 32, _y + 490, "EXP: " + string(_m.xp) + "/" + string(_m.xp_prox_nivel));
+
+    draw_text(_x + 32, _y + 560, "ATRIBUTOS");
+    draw_text(_x + 32, _y + 610, "ATK: " + string(_m.atk) + "   DEF: " + string(_m.def));
+    draw_text(_x + 32, _y + 660, "SPA: " + string(_m.atk_esp) + "   SPD: " + string(_m.def_esp));
+    draw_text(_x + 32, _y + 710, "SPE: " + string(_m.spd));
 
     draw_text(_x + 780, _y + 90, "ATAQUES");
     for (var _i = 0; _i < array_length(_m.movimentos); _i++)
     {
         var _mov = _m.movimentos[_i];
         var _dados = global.movimentos[$ _mov.movimento_id];
-        draw_text(_x + 780, _y + 140 + (_i * 52),
-            _dados.nome + "  PP " + string(_mov.pp_atual) + "/" + string(_dados.pp_max));
+        draw_text(_x + 780, _y + 140 + (_i * 70),
+            _dados.nome + "  (" + string_upper(_dados.tipo) + ")  PP " + string(_mov.pp_atual) + "/" + string(_dados.pp_max));
     }
 
+    var _btn_x1 = _x + _w - 240;
+    var _btn_y1 = _y + _h - 95;
+    var _btn_x2 = _x + _w - 40;
+    var _btn_y2 = _y + _h - 25;
+    draw_rectangle_color(_btn_x1, _btn_y1, _btn_x2, _btn_y2, c_black, c_black, c_black, c_black, false);
+    draw_rectangle_color(_btn_x1, _btn_y1, _btn_x2, _btn_y2, c_white, c_white, c_white, c_white, true);
     draw_set_halign(fa_center);
-    draw_text(_x + _w - 120, _y + _h - 70, "B VOLTAR");
+    draw_set_valign(fa_middle);
+    draw_set_color(c_white);
+    draw_text((_btn_x1 + _btn_x2) * 0.5, (_btn_y1 + _btn_y2) * 0.5, "B VOLTAR");
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
 }
