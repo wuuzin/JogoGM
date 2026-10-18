@@ -150,6 +150,7 @@
     {"id":{"name":"Sprite10","path":"sprites/Sprite10/Sprite10.yy",},},
     {"id":{"name":"Sprite84","path":"sprites/Sprite84/Sprite84.yy",},},
     {"id":{"name":"Sprite85","path":"sprites/Sprite85/Sprite85.yy",},},
+    {"id":{"name":"Sprite87","path":"sprites/Sprite87/Sprite87.yy",},},
     {"id":{"name":"TilesGrama","path":"tilesets/TilesGrama/TilesGrama.yy",},},
   ],
   "resourceType":"GMProject",
